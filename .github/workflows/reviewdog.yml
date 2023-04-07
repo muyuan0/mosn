@@ -47,9 +47,9 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - "1.19"  # Current Go version
-          - "1.18"
-          - "1.17"  # Floor Go version of Mosn == current - 2
+          - "1.20"  # Current Go version
+          - "1.19"
+          - "1.18"  # Floor Go version of Mosn == current - 2
 
     steps:
       - name: Check out code
@@ -66,7 +66,7 @@ jobs:
 
       - name: Coverage
         run: bash <(curl -s https://codecov.io/bash)
-          
+
   test-compatible:
     if: ${{ !github.event.pull_request.draft }}
     name: Test-compatible
@@ -78,7 +78,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
           cache: true
 
       - name: Set to compatible version
@@ -98,7 +98,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
           cache: true
 
       - name: Run Integrate tests.
@@ -115,7 +115,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
           cache: true
 
       - name: Run Integrate tests.
@@ -132,7 +132,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
           cache: true
 
       - name: Run New Integrate
@@ -149,7 +149,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
           cache: true
 
       - name: Run Build.
