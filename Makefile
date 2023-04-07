@@ -16,7 +16,7 @@ MAJOR_VERSION   = $(shell cat VERSION)
 GIT_VERSION     = $(shell git log -1 --pretty=format:%h)
 GIT_NOTES       = $(shell git log -1 --oneline)
 
-BUILD_IMAGE     = golang:1.18
+BUILD_IMAGE     = golang:1.19
 
 WASM_IMAGE      = mosn-wasm
 
@@ -45,13 +45,15 @@ ut-local:
 	make unit-test-istio-${ISTIO_VERSION}
 
 unit-test:
-	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} make ut-local
+	# Go 1.19+ adds vcs check which will cause error "fatal: detected dubious ownership in repository at '/go/src/mosn.io/mosn'".
+	# So here we disable the error via git configuration when running inside Docker.
+	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} bash -c "git config --global --add safe.directory '*' && make ut-local"
 
 coverage-local:
 	sh ${SCRIPT_DIR}/report.sh
 
 coverage:
-	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} make coverage-local
+	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} bash -c "git config --global --add safe.directory '*' && make coverage-local"
 
 integrate-local:
 	GO111MODULE=on go test -p 1 -v ./test/integrate/...
@@ -60,20 +62,20 @@ integrate-local-netpoll:
 	GO111MODULE=on NETPOLL=on go test -p 1 -v ./test/integrate/...
 
 integrate:
-	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} make integrate-local
+	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} bash -c "git config --global --add safe.directory '*' && make integrate-local"
 
 
 integrate-netpoll:
-	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} make integrate-local-netpoll
+	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} bash -c "git config --global --add safe.directory '*' && make integrate-local-netpoll"
 
 integrate-framework:
 	@cd ./test/cases && bash run_all.sh
 
 integrate-new:
-	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} make integrate-framework
+	docker run --rm -v $(shell go env GOPATH):/go -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} bash -c "git config --global --add safe.directory '*' && make integrate-framework"
 
 build:
-	docker run --rm -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} make build-local
+	docker run --rm -v $(shell pwd):/go/src/${PROJECT_NAME} -w /go/src/${PROJECT_NAME} ${BUILD_IMAGE} bash -c "git config --global --add safe.directory '*' && make build-local"
 
 build-wasm-image:
 	docker build --rm -t ${WASM_IMAGE}:${MAJOR_VERSION} -f build/contrib/builder/wasm/Dockerfile .
